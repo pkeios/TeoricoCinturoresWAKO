@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quiz Kickboxing – Exámenes de cinturón</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f0f12;--card:#1a1a20;--card2:#23232b;--line:#2e2e38;--tx:#f2f2f5;--mut:#9a9aa8;--ok:#2ecc71;--bad:#ff4d4d;--acc:#e63946;--belt:#F5C518}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--tx);font-family:Inter,system-ui,sans-serif;font-size:16px;line-height:1.45;min-height:100vh;-webkit-tap-highlight-color:transparent}
+.wrap{max-width:640px;margin:0 auto;padding:18px 16px 60px}
+h1,h2,.bebas{font-family:'Bebas Neue',Impact,sans-serif;letter-spacing:.5px;font-weight:400}
+h1{font-size:40px;line-height:1}
+h2{font-size:28px}
+.sub{color:var(--mut);font-size:14px}
+button{font:inherit;color:inherit;border:none;cursor:pointer;background:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:12px 16px;border-radius:12px;font-weight:600;background:var(--card2);border:1px solid var(--line);transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.belt{background:var(--belt);border-color:var(--belt);color:#111}
+.btn.full{width:100%}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+.logo{display:flex;align-items:center;gap:10px}
+.glove{width:44px;height:44px;border-radius:12px;background:var(--acc);display:grid;place-items:center;font-size:24px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 20px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}
+.stat b{display:block;font-family:'Bebas Neue';font-size:28px;font-weight:400;line-height:1}
+.stat span{font-size:12px;color:var(--mut)}
+.belts{display:flex;flex-direction:column;gap:12px}
+.bcard{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;position:relative}
+.bcard .stripe{height:10px;background:var(--c)}
+.bcard .in{padding:14px 16px}
+.bhead{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.bname{font-family:'Bebas Neue';font-size:30px;line-height:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 12px}
+.chip{font-size:12px;padding:3px 8px;border-radius:99px;background:var(--card2);color:var(--mut);border:1px solid var(--line)}
+.prog{height:6px;background:var(--card2);border-radius:9px;overflow:hidden;margin:4px 0 12px}
+.prog i{display:block;height:100%;background:var(--c);border-radius:9px}
+.locked{opacity:.45}
+.lockmsg{font-size:13px;color:var(--mut)}
+.best{text-align:right;font-size:12px;color:var(--mut)}
+.best b{display:block;font-family:'Bebas Neue';font-size:26px;font-weight:400;color:var(--tx);line-height:1}
+.bcard .row .btn{padding:10px}
+.bcard .btn.belt{background:var(--c);border-color:var(--c);color:var(--fg)}
+/* quiz */
+.qtop{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.qtop .x{width:38px;height:38px;border-radius:10px;background:var(--card2);font-size:18px}
+.qbar{flex:1;height:8px;background:var(--card2);border-radius:9px;overflow:hidden}
+.qbar i{display:block;height:100%;background:var(--belt);transition:width .3s}
+.qcount{font-size:13px;color:var(--mut);min-width:44px;text-align:right}
+.meta{display:flex;justify-content:space-between;align-items:center;margin:8px 0 14px;font-size:13px;color:var(--mut)}
+.streak{color:#ffb020;font-weight:700}
+.timer{height:5px;background:var(--card2);border-radius:9px;overflow:hidden;margin-bottom:16px}
+.timer i{display:block;height:100%;background:var(--ok);width:100%}
+.timer.warn i{background:var(--bad)}
+.qcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.qtag{display:inline-block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:3px 8px;border-radius:6px;background:var(--belt);color:#111;margin-bottom:10px}
+.qtype{font-size:12px;color:var(--mut);margin-left:6px}
+.qtext{font-size:19px;font-weight:600;margin-bottom:16px}
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{text-align:left;padding:13px 14px;border-radius:12px;background:var(--card2);border:2px solid var(--line);font-weight:500;transition:border-color .15s,background .15s}
+.opt:hover:not(:disabled){border-color:#555}
+.opt.sel{border-color:var(--belt);background:#2b2b20}
+.opt.ok{border-color:var(--ok);background:rgba(46,204,113,.15)}
+.opt.bad{border-color:var(--bad);background:rgba(255,77,77,.13)}
+.opt.miss{border-color:var(--ok);border-style:dashed}
+.opt.gone{opacity:.25;text-decoration:line-through}
+.opt:disabled{cursor:default}
+.inp{width:100%;padding:14px;border-radius:12px;background:var(--card2);border:2px solid var(--line);color:var(--tx);font:inherit;font-size:18px}
+.inp:focus{outline:none;border-color:var(--belt)}
+.inp.ok{border-color:var(--ok)}.inp.bad{border-color:var(--bad)}
+.order-ans{min-height:54px;border:2px dashed var(--line);border-radius:12px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.order-pool{display:flex;flex-wrap:wrap;gap:8px}
+.och{padding:9px 12px;border-radius:10px;background:var(--card2);border:1px solid var(--line);font-weight:600}
+.order-ans .och{background:#2b2b20;border-color:var(--belt)}
+.och .n{color:var(--belt);margin-right:5px;font-size:12px}
+.actions{margin-top:14px;display:flex;gap:10px}
+.actions .btn{flex:1}
+.fb{margin-top:14px;padding:14px;border-radius:12px;border:1px solid var(--line);background:var(--card2);animation:pop .25s}
+.fb.ok{border-color:var(--ok)}.fb.bad{border-color:var(--bad)}
+.fb h3{font-size:16px;margin-bottom:4px}
+.fb.ok h3{color:var(--ok)}.fb.bad h3{color:var(--bad)}
+.fb p{font-size:14px;color:#d4d4dc}
+.fb .ans{font-weight:700;color:var(--tx)}
+@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{0%,100%{transform:none}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.shake{animation:shake .25s}
+/* results */
+.res{text-align:center;padding:10px 0 4px}
+.ring{width:170px;height:170px;margin:10px auto 6px;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .v{position:absolute;inset:0;display:grid;place-items:center;font-family:'Bebas Neue';font-size:56px;line-height:1}
+.ring .v small{display:block;font-size:14px;color:var(--mut);font-family:Inter}
+.verdict{font-family:'Bebas Neue';font-size:34px}
+.verdict.ok{color:var(--ok)}.verdict.bad{color:var(--bad)}
+.mlist{margin-top:18px;display:flex;flex-direction:column;gap:10px;text-align:left}
+.mitem{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:10px;padding:12px}
+.mitem .q{font-weight:600;font-size:14px;margin-bottom:4px}
+.mitem .a{font-size:14px;color:var(--ok)}
+.mitem .y{font-size:13px;color:var(--bad)}
+.mitem .e{font-size:13px;color:var(--mut);margin-top:4px}
+.unlock{margin:14px 0;padding:14px;border-radius:14px;background:var(--c);color:var(--fg);font-weight:700;animation:pop .4s}
+/* flash */
+.flash{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;min-height:260px;display:flex;flex-direction:column;justify-content:center;cursor:pointer}
+.flash .q{font-size:20px;font-weight:600}
+.flash .a{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);font-size:17px;color:var(--ok);font-weight:600}
+.flash .e{font-size:14px;color:var(--mut);margin-top:8px;font-weight:400}
+.flash .tap{margin-top:18px;font-size:13px;color:var(--mut)}
+details{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin-top:20px}
+summary{cursor:pointer;font-weight:600}
+details ul{margin:10px 0 0 18px;font-size:14px;color:#cfcfd8}
+details li{margin-bottom:6px}
+.foot{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.foot .btn{font-size:13px;padding:9px 12px;flex:1}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:20px;z-index:9}
+.modal .box{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;max-width:360px;width:100%}
+.modal p{margin:8px 0 16px;color:#ccc;font-size:15px}
+.hidden{display:none!important}
+.kgs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.kg{min-width:46px;text-align:center;padding:7px 8px;border-radius:9px;background:var(--card2);border:1px solid var(--line);font-family:'Bebas Neue';font-size:22px;line-height:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid2 .btn{padding:10px 6px;font-size:14px}
+.trick{margin-top:10px;padding:12px 14px;border-radius:12px;background:rgba(255,190,40,.08);border:1px solid rgba(255,190,40,.35);text-align:left}
+.trick b{color:#ffc94a;font-size:14px}
+.trick p{font-size:14px;color:#e6e6ec;margin-top:4px}
+.flash .trick{cursor:default}
+.plist{display:flex;flex-direction:column;gap:8px}
+.pitem{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:11px 13px;cursor:pointer}
+.pk{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--mut)}
+.pn{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;font-size:12px}
+.pv{margin-top:5px;font-weight:600}
+.pv.blur{color:var(--mut);font-weight:400;font-style:italic}
+.cmp{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.crow{display:grid;grid-template-columns:12px 72px 1fr;gap:8px;align-items:start;font-size:14px;padding:6px;border-radius:8px}
+.crow.me{background:var(--card2);outline:1px solid var(--belt)}
+.cdot{width:12px;height:12px;border-radius:3px;margin-top:4px}
+.beltpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bp{padding:11px 6px;border-radius:12px;font-weight:700;background:var(--card);border:2px solid var(--line);border-left:8px solid var(--c)}
+.bp.on{background:var(--c);color:var(--fg);border-color:var(--c)}
+.pill{display:inline-block;padding:2px 8px;border-radius:99px;font-size:12px;font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<div id="modal"></div>
+<script>
+/* ============ CINTURONES ============ */
+const BELTS=[
+ {k:'am',n:'Amarillo',c:'#F5C518',fg:'#111',pass:60,nq:10,time:40,hint:true,inputP:0,   opts:3},
+ {k:'na',n:'Naranja', c:'#F07A1A',fg:'#111',pass:60,nq:12,time:32,hint:true,inputP:0, opts:4},
+ {k:'vi',n:'Violeta', c:'#9B4DE0',fg:'#fff',pass:60,nq:14,time:27,hint:true,inputP:0, opts:4},
+ {k:'ve',n:'Verde',   c:'#2DB34A',fg:'#fff',pass:60,nq:16,time:23,hint:false,inputP:0,opts:5},
+ {k:'az',n:'Azul',    c:'#2F6FE0',fg:'#fff',pass:70,nq:18,time:19,hint:false,inputP:0,opts:5},
+ {k:'ma',n:'Marrón',  c:'#9A6332',fg:'#fff',pass:80,nq:20,time:16,hint:false,inputP:0,opts:5},
+];
+
+/* ============ BANCO DE PREGUNTAS ============ */
+const Q=[];let CUR='am';
+const belt=k=>{CUR=k};
+function add(o){o.b=CUR;o.id=CUR+(Q.filter(x=>x.b===CUR).length+1);Q.push(o)}
+const mc=(q,a,d,e,inp)=>add({t:'mc',q,a,d,e,inp});
+const ms=(q,a,d,e)=>add({t:'ms',q,a,d,e});
+const tf=(q,a,e)=>add({t:'tf',q,a,e});
+const od=(q,a,e)=>add({t:'od',q,a,e});
+
+/* ---- AMARILLO ---- */
+belt('am');
+mc('¿Qué significa Kickboxing?','Boxeo y patada',['Boxeo con rodillas','Combate de pie','Boxeo tailandés','Patada y puño libre'],'Kick = patada · Boxing = boxeo.',['boxeo y patada','patada y boxeo','boxeo patada']);
+mc('¿Cuántas modalidades de TATAMI abarca el Kickboxing?','4',['3','5','6','2'],'Formas Musicales, Point Fighting, Light Contact y Kicklight.',['4','cuatro']);
+mc('¿Cuántas modalidades de RING abarca el Kickboxing?','3',['4','2','5','6'],'Full Contact, Low Kick y K1 Style.',['3','tres']);
+ms('Marcá TODAS las modalidades de TATAMI',['Formas Musicales','Point Fighting','Light Contact','Kicklight'],['Full Contact','Low Kick','K1 Style'],'Tatami: Formas Musicales, Point Fighting, Light Contact y Kicklight.');
+ms('Marcá TODAS las modalidades de RING',['Full Contact','Low Kick','K1 Style'],['Kicklight','Light Contact','Point Fighting','Formas Musicales'],'Ring: Full Contact, Low Kick y K1 Style.');
+tf('Kicklight es una modalidad de ring.',false,'Kicklight se compite en tatami.');
+tf('Formas Musicales es una modalidad de tatami.',true,'Es una de las 4 modalidades de tatami.');
+mc('¿Qué significa Full Contact?','Contacto pleno',['Contacto ligero','Contacto total con rodillas','Combate completo','Contacto libre'],'Full Contact = contacto pleno.',['contacto pleno']);
+mc('¿Qué significa Light Contact?','Contacto ligero',['Contacto pleno','Contacto de piernas','Contacto por puntos','Contacto medio'],'Light Contact = contacto ligero.',['contacto ligero','contacto liviano']);
+mc('¿Dónde se originó el Full Contact?','Los Ángeles, California',['Tokio, Japón','Bangkok, Tailandia','Miami, Florida','París, Francia'],'En Los Ángeles, California, el 14 de septiembre de 1974.',['los angeles','los angeles california','california']);
+mc('¿Cuál es la fecha de origen del Full Contact?','14 de septiembre de 1974',['2 de abril de 1963','14 de septiembre de 1947','30 de noviembre de 1974','20 de julio de 1974'],'14/09/1974 en Los Ángeles. Ojo: 2/4/1963 es la palabra “Kickboxing”.');
+mc('¿En qué AÑO se originó el Full Contact?','1974',['1963','1984','1971','1979'],'14 de septiembre de 1974.',['1974']);
+mc('En Light Contact, ¿a qué porcentaje se reduce la potencia?','70%',['50%','60%','80%','30%'],'Técnicamente igual al Full Contact, pero en tatami y con la potencia al 70%.',['70','70%','70 por ciento']);
+mc('En Full Contact, las técnicas de MANOS son similares a...','El boxeo',['El karate','El muay thai','El taekwondo','El kung fu'],'Manos: similar al boxeo.',['boxeo','el boxeo','box']);
+mc('En Full Contact, las técnicas de PIERNAS son...','Una recopilación de todas las artes marciales: solo las patadas más efectivas',['Solo las patadas del taekwondo','Las del muay thai, con rodillas y codos','Solo patadas por debajo de la cintura'],'Se toman las patadas más efectivas de todas las artes marciales.');
+mc('¿Dónde se compite el Full Contact?','Arriba de un ring',['En un tatami','En una jaula','En tatami o ring indistintamente'],'Full Contact es modalidad de ring.',['ring','en un ring','arriba de un ring']);
+mc('¿En qué se diferencia el Light Contact del Full Contact?','Se compite en tatami y la potencia se reduce al 70%',['Solo se usan las manos','No hay patadas a la cabeza','Se compite en ring sin cabezal'],'Técnicamente es igual al Full Contact.');
+mc('¿Cómo se llama un competidor de Full Contact?','Fullcontactista',['Kickboxer profesional','Ringuero','Fullcontacter'],'Full Contact → Fullcontactista.',['fullcontactista']);
+mc('¿Cómo se llama un practicante de Light Contact?','Lightcontactista',['Lightboxer','Tatamista','Lightcontacter'],'Light Contact → Lightcontactista.',['lightcontactista']);
+mc('¿A qué federación pertenecés?','Federación Argentina de Kickboxing',['Confederación Argentina de Deportes','Confederación Panamericana de Kickboxing','Asociación Argentina de Kickboxing'],'A la Federación Argentina de Kickboxing.',['federacion argentina de kickboxing','fak']);
+mc('Cinturón Amarillo · Golpe de mano evaluado:','Uno y Dos',['Cross con ambas manos','Recto y revés','Swing','Hook'],'Uno y Dos, en el lugar, avanzando y retrocediendo.');
+mc('Cinturón Amarillo · Golpe de pierna evaluado:','Patada frontal',['Patada circular','Patada lateral','Patada descendente','Patada en gancho'],'Patada frontal (en el lugar, avanzando y retrocediendo).');
+mc('Cinturón Amarillo · Defensa de mano:','Bloqueo de los golpes Uno y Dos',['Absorción del Cross','Esquive del Swing','Absorción del revés'],'Bloqueo de Uno y Dos en el lugar, 2 veces cada técnica.');
+mc('Cinturón Amarillo · Defensa de pierna:','Bloqueo de la patada frontal',['Absorción de la patada circular','Bloqueo de la patada descendente','Absorción de la patada lateral'],'Bloqueo de la patada frontal en el lugar.');
+mc('Guardia de Light Contact · ¿qué desplazamientos se evalúan?','Dos pasos adelante, dos atrás y dos hacia los costados',['Un paso en cada dirección','Tres pasos adelante y tres atrás','Solo pasos laterales rebotando'],'Dos pasos en cada dirección.');
+mc('En el examen, ¿cuántas veces se aplica cada técnica de defensa?','2 veces',['1 vez','3 veces','5 veces'],'Se aplica 2 veces la técnica C/U.',['2','dos','2 veces']);
+mc('Cinturón Amarillo · Combate:','Light Contact 2 minutos',['Kicklight 2 minutos','1 round LC + 1 round KL','Point Fighting 2 minutos'],'Encadenamiento y combate: Light Contact 2 minutos.');
+mc('Puntaje mínimo de aprobación (Amarillo a Verde):','60 puntos, mínimo 6 en cada punto',['70 puntos, mínimo 7 en cada punto','50 puntos','80 puntos'],'60/100 con 6 mínimo por punto. Azul y Marrón piden 70.');
+
+/* ---- NARANJA ---- */
+belt('na');
+mc('¿Con cuántos fallos se puede definir un combate de Light Contact y Kicklight?','7',['5','6','8','4'],'Puntos, descalificación, RSC, RSCH, abandono, diferencia de 15 puntos en 2 jueces y ausencia.',['7','siete']);
+ms('Marcá los fallos válidos en Light Contact y Kicklight',['Por puntos','Descalificación','Detención RSC','RSCH','Abandono','Diferencia de 15 puntos en 2 jueces','Ausencia'],['K.O.','K.O.T.'],'En tatami no está reglamentado el K.O. (knock out, dejar al rival fuera de combate): eso es de ring.');
+mc('En los fallos, ¿qué significa RSC?','El árbitro detiene el combate (detención técnica)',['El árbitro detiene por golpes en la cabeza','Retiro sin combate','Descalificación por reincidencia'],'RSC = Referee Stops Contest: el árbitro detiene el combate. RSC-H agrega la H de Head (cabeza).');
+mc('En los fallos, ¿qué significa RSCH?','El árbitro detiene por golpes en la cabeza (lesión, con control médico)',['El árbitro detiene por superioridad técnica','Abandono del rincón','Ausencia del competidor'],'RSC-H = Referee Stops Contest – Head: se detiene por golpes en la cabeza y el competidor pasa por control médico. En la planilla figura como “lesión-médico”.');
+mc('Fallo por diferencia de puntos en LC y Kicklight:','15 puntos en 2 jueces',['10 puntos en 3 jueces','15 puntos en 1 juez','20 puntos en 2 jueces','10 puntos en 2 jueces'],'Diferencia de 15 puntos en 2 jueces.',['15','15 puntos']);
+mc('Indumentaria de Kicklight:','Pantalón corto estilo Low Kick sin letras tailandesas y remera sin mangas estilo sudadera',['Chaqueta escote en V y pantalón largo','Torso desnudo y pantalón largo','Remera cuello redondo y pantalón largo'],'Short estilo Low Kick (sin letras tailandesas) + musculosa.');
+ms('Protecciones de un practicante de Kicklight',['Vendas','Bucal','Cabezal','Pechera femenina','Protector inguinal','Canillera','Protector de pie'],['Coderas','Protector facial','Guantes de point fighting'],'Vendas, bucal, cabezal, pechera femenina, inguinal, canillera y protector de pie.');
+tf('El pantalón de Kicklight puede tener letras tailandesas.',false,'Debe ser sin letras tailandesas.');
+mc('¿Cómo se llama un practicante de Kickboxing?','Kickboxer',['Kickboxista','Boxeador','Pateador'],'Kickboxer.',['kickboxer']);
+mc('Cinturón Naranja · Golpe de mano:','Cross con ambas manos',['Uno y Dos','Swing con ambas manos','Hook al mentón','Recto y revés'],'Cross con ambas manos en el lugar.');
+mc('Cinturón Naranja · Golpe de pierna:','Patada circular',['Patada frontal','Patada en gancho','Patada lateral','Patada descendente'],'Patada circular (en el lugar, avanzando y retrocediendo).');
+mc('Cinturón Naranja · Defensa de mano:','Bloqueo y absorción del Cross',['Bloqueo de Uno y Dos','Esquive del Swing','Absorción del revés'],'Bloqueo y absorción del Cross, 2 veces cada técnica.');
+mc('Cinturón Naranja · Defensa de pierna:','Absorción de la patada circular',['Bloqueo de la patada frontal','Absorción de la patada lateral','Bloqueo de la patada en gancho'],'Absorción de la patada circular en el lugar.');
+mc('Cinturón Naranja · Sombra:','Todas las técnicas de Kicklight durante 2 minutos',['De Full Contact','De Light Contact','De Low Kick'],'Sombra de Kicklight 2 minutos.');
+mc('Cinturón Naranja · Combate:','1 round Light Contact + 1 round Kicklight',['Light Contact 2 minutos','1 round solo manos + 1 solo piernas','4 rounds de distintas modalidades'],'LC + KL, de 2 minutos cada uno.');
+mc('Cinturón Naranja · ¿Qué patada se pregunta cómo bloquear (punto 9)?','Low kick',['Patada frontal','Patada descendente','Patada giro lateral'],'“Cómo se bloquea la patada low kick”.',['low kick','lowkick']);
+
+/* ---- VIOLETA ---- */
+belt('vi');
+mc('Vestimenta reglamentaria de Point Fighting:','Chaqueta escote en V, pantalón largo y cinturón opcional',['Remera sin mangas y short','Torso desnudo y pantalón largo','Remera cuello redondo y pantalón largo'],'Chaqueta escote en V + pantalón largo; cinturón opcional.');
+tf('En Point Fighting el cinturón es obligatorio.',false,'El cinturón es opcional.');
+ms('Protecciones reglamentarias de Point Fighting',['Cabezal sin pómulo ni mentón','Protector bucal','Coderas','Guantes de point fighting','Protector de tibia','Protector de pie','Protector inguinal'],['Guantes de boxeo','Rodilleras','Tibial con empeine'],'PF usa guantes de point fighting y coderas; no guantes de boxeo.');
+mc('En Point Fighting, el protector facial se usa en...','Niños y cadetes menores',['Todos los competidores','Solo mujeres','Juniors y adultos'],'Protector facial: niños y cadetes menores.');
+mc('En Point Fighting, las vendas son...','Opcionales',['Obligatorias','Prohibidas','Obligatorias solo en adultos'],'Vendas opcionales.',['opcionales','opcional']);
+mc('En Point Fighting, el protector de pecho es para...','Solo mujeres',['Hombres y mujeres','Solo menores','No se usa'],'Protector de pecho: solo mujeres.');
+mc('En Point Fighting, el protector inguinal es para...','Hombres y mujeres',['Solo hombres','Solo adultos','Es opcional'],'Inguinal: hombres y mujeres.');
+tf('Las coderas son protección reglamentaria en Point Fighting.',true,'Sí, las coderas están en la lista.');
+mc('¿Qué edades tiene la categoría INFANTILES?','7, 8 y 9 años',['10, 11 y 12 años','6, 7 y 8 años','13, 14 y 15 años'],'Infantiles (Children): 7 a 9 años.');
+mc('¿Qué edades tiene la categoría CADETES MENORES?','10, 11 y 12 años',['7, 8 y 9 años','13, 14 y 15 años','12, 13 y 14 años'],'Cadetes menores (Younger Cadets): 10 a 12 años.');
+mc('¿Qué edades tiene la categoría CADETES MAYORES?','13, 14 y 15 años',['10, 11 y 12 años','16, 17 y 18 años','14, 15 y 16 años'],'Cadetes mayores (Older Cadets): 13 a 15 años.');
+mc('¿Qué edades tiene la categoría JUNIORS en tatami?','16, 17 y 18 años',['15, 16 y 17 años','13, 14 y 15 años','19 a 21 años'],'Juniors: 16 a 18 años. Después vienen Seniors (19 a 40) y Masters (41 a 55).');
+mc('Un competidor de 14 años compite en...','Cadetes mayores',['Cadetes menores','Juniors','Infantiles'],'13 a 15 años = cadetes mayores.');
+mc('Cinturón Violeta · Posición de guardia evaluada:','Point Fighting (rebotando)',['Light Contact','Full Contact','Low Kick'],'Guardia de Point Fighting rebotando, 2 pasos en cada dirección.');
+mc('Cinturón Violeta · Golpes de mano:','Recto con mano retrasada y revés con mano adelantada',['Cross con ambas manos','Body uppercut y hook','Giro de revés de puño'],'Recto (retrasada) y revés (adelantada).');
+mc('Cinturón Violeta · Golpe de pierna:','Patada lateral con pierna de adelante',['Patada circular con pierna de atrás','Patada descendente','Patada en gancho'],'Patada lateral con pierna de adelante.');
+mc('Cinturón Violeta · Defensa de mano:','Absorción del golpe de mano retrasada y del revés con mano adelantada',['Bloqueo y absorción del Cross','Esquive del Swing','Bloqueo del Hook'],'Absorción de ambos golpes.');
+mc('Cinturón Violeta · Defensa de pierna:','Absorción de la patada lateral',['Bloqueo de la patada frontal','Absorción de la patada circular','Bloqueo de la patada descendente'],'Absorción de la patada lateral.');
+mc('Cinturón Violeta · Combate:','1 round solo manos + 1 solo piernas + 1 manos y piernas',['1 round LC + 1 round KL','Point Fighting 2 minutos','4 rounds de distintas modalidades'],'3 rounds de 2 minutos.');
+mc('Cinturón Violeta · Punto 9:','Finta + combinación recto mano retrasada y reverso mano adelantada',['Barrida interna y externa','Bolsa 1 round','Bloqueo del low kick'],'Finta + combinación.');
+mc('Cinturón Violeta · Encadenamiento:','Point Fighting 2 minutos',['Kicklight 2 minutos','Full Contact 2 minutos','Light Contact 2 minutos'],'Point Fighting 2 minutos.');
+
+/* ---- VERDE ---- */
+belt('ve');
+mc('¿Qué diferencia al Kickboxing de las demás artes marciales?','Se compite tanto en tatami como en ring',['Solo se compite en ring','No tiene categorías de peso','Solo usa técnicas de piernas'],'Ring: contacto pleno (K.O.). Tatami: potencia al 70%, K.O. no reglamentado.');
+tf('En tatami está reglamentado el K.O.',false,'En tatami se reduce la potencia al 70% y el K.O. no está reglamentado.');
+mc('Reconocimiento NACIONAL de la federación:','Inspección General de Justicia de la Nación y Confederación Argentina de Deportes (C.A.D.)',['W.A.K.O.','Confederación Panamericana de Kickboxing','Comité Olímpico Internacional'],'Nacional: IGJ + C.A.D.');
+mc('Reconocimiento CONTINENTAL de la federación:','Confederación Panamericana de Kickboxing',['W.A.K.O.','Confederación Argentina de Deportes','Comité Olímpico Argentino'],'Continental: Confederación Panamericana de Kickboxing.');
+mc('Reconocimiento MUNDIAL de la federación:','W.A.K.O.',['C.A.D.','Inspección General de Justicia','Confederación Panamericana'],'Mundial: W.A.K.O.',['wako']);
+mc('¿Qué significa W.A.K.O.?','World Association of Kickboxing Organizations',['World Amateur Kickboxing Organization','World Alliance of Kickboxing Officials','World Association of Kick Organizations'],'World Association of Kickboxing Organizations.',['world association of kickboxing organizations']);
+ms('Organismos de reconocimiento INTERNACIONAL (anexo)',['Fesukibo','Copakibo','WAKO','COI'],['C.A.D.','IGJ','FIFA'],'Internacional: Fesukibo, Copakibo, WAKO y COI. C.A.D. e IGJ son nacionales.');
+mc('Indumentaria de Full Contact:','Torso desnudo y pantalón largo',['Remera cuello redondo y pantalón largo','Torso desnudo y short sin letras tailandesas','Chaqueta escote en V'],'Full Contact: torso desnudo + pantalón largo.');
+mc('Indumentaria de Light Contact:','Remera cuello redondo y pantalón largo',['Torso desnudo y pantalón largo','Remera sin mangas y short','Chaqueta escote en V y pantalón largo'],'Light Contact: remera cuello redondo + pantalón largo.');
+ms('Protecciones en Full Contact y Light Contact',['Vendas','Bucal','Cabezal sin pómulo ni mentón','Guantes de box','Protector inguinal','Canillera','Protector de pie'],['Guantes de point fighting','Coderas','Protector facial'],'Más protector de pecho femenino.');
+mc('Full Contact PROFESIONAL · protecciones:','Las mismas, pero sin cabezal y con vendaje profesional',['Las mismas más protector facial','Solo guantes y bucal','Sin canilleras, con cabezal'],'Mismas protecciones, sin cabezal, vendaje profesional.');
+mc('¿Con cuántos fallos se puede definir un combate de RING?','7',['5','6','8'],'Puntos, K.O., K.O.T., detención, abandono, descalificación y ausencia.',['7','siete']);
+ms('Marcá los fallos de un combate de RING',['Por puntos','K.O.','K.O.T.','Detención','Abandono','Descalificación','Ausencia'],['Diferencia de 15 puntos en 2 jueces','Empate técnico'],'La diferencia de 15 puntos es de tatami.');
+tf('El fallo por diferencia de 15 puntos aplica en combates de ring.',false,'Es un fallo de tatami (LC/Kicklight).');
+mc('Infantiles (7 a 9 años) en tatami: ¿categoría más liviana?','18 kg',['21 kg','24 kg','28 kg'],'Infantiles: 18 · 21 · 24 · 27 · 30 · 33 · 36 · +36 (de a 3).',['18']);
+mc('Cadetes menores (10 a 12 años): ¿categoría más liviana?','28 kg',['32 kg','24 kg','42 kg'],'Cadetes menores: 28, 32, 37, 42, 47, +47.',['28']);
+od('Ordená las categorías de cadetes menores, 10 a 12 años (menor a mayor)',['28','32','37','42','47','+47'],'28 · 32 · 37 · 42 · 47 · +47 (masc. y fem.).');
+mc('Cadetes mayores (13 a 15) MASCULINO: ¿cuántas categorías?','9',['7','8','6'],'32, 37, 42, 47, 52, 57, 63, 69, +69.',['9','nueve']);
+mc('Cadetes mayores (13 a 15) MASCULINO: ¿categoría más pesada?','+69 kg',['+65 kg','+70 kg','+74 kg'],'…57, 63, 69, +69.',['+69','69']);
+mc('Cadetes mayores (13 a 15) FEMENINO: ¿categoría más pesada?','+65 kg',['+69 kg','+60 kg','+70 kg'],'32, 37, 42, 46, 50, 55, 60, 65, +65.',['+65','65']);
+ms('Marcá las categorías de cadetes mayores FEMENINO (13 a 15)',['32','37','42','46','50','55','60','65','+65'],['47','52','57','63'],'Fem.: 32 · 37 · 42 · 46 · 50 · 55 · 60 · 65 · +65. Las otras son masculinas.');
+mc('Juniors (16 a 18) MASCULINO: ¿cuántas categorías?','9',['7','8','6'],'57, 63, 69, 74, 79, 84, 89, 94, +94.',['9','nueve']);
+mc('Juniors (16 a 18) MASCULINO: ¿categoría más liviana?','57 kg',['50 kg','63 kg','42 kg'],'Arranca en 57 y termina en +94.',['57']);
+mc('Juniors (16 a 18) FEMENINO: ¿cuántas categorías?','6',['7','9','5'],'50, 55, 60, 65, 70, +70.',['6','seis']);
+od('Ordená juniors FEMENINO, 16 a 18 años (menor a mayor)',['50','55','60','65','70','+70'],'50 · 55 · 60 · 65 · 70 · +70.');
+mc('Masters masculino (41 a 55 años) en tatami · categorías:','63, 74, 84, 94, +94',['65, 75, 85, +85','60, 70, 80, +80','63, 69, 74, +74'],'Masters masc.: 63 · 74 · 84 · 94 · +94. Fem.: 55 · 65 · +65.');
+mc('Cinturón Verde · Sombra:','De Full Contact',['De Kicklight','De Low Kick','De K-1 Style'],'Sombra de Full Contact.');
+mc('Cinturón Verde · Golpes de mano:','Body uppercut (zona media) y hook (al mentón)',['Swing con ambas manos','Cross con ambas manos','Recto y revés'],'Uppercut al cuerpo + hook al mentón.');
+mc('Cinturón Verde · Golpe de pierna:','Patada descendente',['Patada en gancho','Patada lateral','Patada giro lateral'],'Patada descendente.');
+mc('Cinturón Verde · Defensa de mano:','Absorción y bloqueo del uppercut + bloqueo del hook',['Absorción, bloqueo y esquive del swing','Bloqueo y absorción del cross','Absorción del revés'],'Uppercut: absorción y bloqueo. Hook: bloqueo.');
+mc('Cinturón Verde · Defensa de pierna:','Bloqueo de la patada descendente',['Absorción de la patada lateral','Bloqueo de la patada en gancho','Absorción de la patada circular'],'Bloqueo de la descendente.');
+mc('Cinturón Verde · Punto 9:','Barrida interna y externa + soga 5 minutos',['Bolsa 1 round + soga 6 minutos','Finta + combinación','Bolsa 2 rounds + soga 8 minutos'],'Barridas + 5 min de soga.');
+od('Cinturón Verde · Ordená los 4 rounds del combate',['Light Contact','Kicklight','Point Fighting','Full Contact'],'LC → KL → PF → FC (2 min c/u).');
+mc('Cinturón Verde · Encadenamiento:','Full Contact 2 minutos',['Point Fighting 2 minutos','Low Kick 2 minutos','Kicklight 2 minutos'],'Full Contact 2 minutos.');
+
+/* ---- AZUL ---- */
+belt('az');
+mc('Indumentaria de Low Kick:','Torso desnudo y short de Kickboxing sin letras tailandesas',['Torso desnudo y pantalón largo','Remera sin mangas y short','Remera cuello redondo y pantalón largo'],'Low Kick: torso desnudo + short sin letras tailandesas.');
+ms('Protecciones AMATEUR de Low Kick',['Bucal','Vendas','Cabezal','Guantes de boxeo','Tibial con empeine'],['Coderas','Guantes de point fighting','Protector facial','Pechera masculina'],'Bucal, vendas, cabezal, guantes de boxeo y tibial con empeine.');
+mc('Low Kick PROFESIONAL · protecciones:','Ídem amateur, pero sin tibiales ni cabezal: solo guantes de box',['Igual que amateur','Sin bucal ni vendas','Con cabezal pero sin tibiales'],'Profesional: sin tibiales ni cabezal.');
+mc('¿Cuándo se creó la palabra “Kickboxing”?','2 de abril de 1963',['14 de septiembre de 1974','30 de noviembre de 2019','20 de julio de 1963'],'2/4/1963, en Japón.');
+mc('¿Dónde se creó la palabra “Kickboxing”?','Japón',['Estados Unidos','Tailandia','Holanda','China'],'En Japón, 1963.',['japon']);
+mc('¿En qué año se creó la palabra “Kickboxing”?','1963',['1974','1969','1958','1981'],'2 de abril de 1963.',['1963']);
+mc('¿Cuándo fue aceptada la WAKO por el COI?','30 de noviembre de 2019',['20 de julio de 2021','2 de abril de 2019','14 de septiembre de 2019'],'Según la planilla: 30/11/2019, y desde ese día es el Día Internacional del Kickboxing. Ojo: según WAKO, el reconocimiento provisorio del COI fue el 30/11/2018.');
+mc('¿Qué se conmemora el 30 de noviembre?','El Día Internacional del Kickboxing',['El origen del Full Contact','La creación de la palabra Kickboxing','La fundación de la FAK'],'Aceptación de la WAKO por el COI (la planilla dice 2019; según WAKO fue en 2018).');
+mc('¿Cuándo fue reconocido totalmente el Kickboxing como deporte olímpico?','20 de julio de 2021, en los JJOO de Tokio 2020+1',['30 de noviembre de 2019, en Lausana','2 de abril de 2021, en Tokio','14 de septiembre de 2020, en París'],'20/07/2021: la Sesión del COI en Tokio (Juegos 2020+1) le dio el reconocimiento pleno a la WAKO. Eso no significa que ya se compita en los Juegos Olímpicos.');
+const PAIS=['China','Japón','Corea','Tailandia','Filipinas','Brasil','Francia','Japón y Brasil'];
+[['Kung fu','China'],['Karate','Japón'],['Taekwondo','Corea'],['Judo','Japón'],['Aikido','Japón'],['Sumo','Japón'],['Muay thai','Tailandia'],['Kali','Filipinas'],['Capoeira','Brasil'],['Jiu jitsu','Japón y Brasil'],['Savate','Francia']].forEach(([a,p])=>mc(`¿País de origen ${a==='Capoeira'?'de la':'del'} ${a}?`,p,PAIS.filter(x=>x!==p),`${a}: ${p}.`,[p.toLowerCase(),p==='Japón y Brasil'?'japon y brasil':p]));
+ms('¿Qué artes marciales son originarias de JAPÓN?',['Karate','Judo','Aikido','Sumo','Kickboxing'],['Kung fu','Taekwondo','Muay thai','Kali','Savate'],'Karate, judo, aikido, sumo y kickboxing (jiu jitsu: Japón y Brasil).');
+mc('Cinturón Azul · Sombra:','De Low Kick',['De Full Contact','De K-1 Style','De Kicklight'],'Sombra de Low Kick.');
+mc('Cinturón Azul · Golpe de mano:','Swing con ambas manos',['Body uppercut y hook','Giro de revés de puño','Cross con ambas manos'],'Swing con ambas manos.');
+mc('Cinturón Azul · Golpe de pierna:','Patada en gancho',['Patada descendente','Patada giro lateral','Rodilla frontal'],'Patada en gancho (en el lugar).');
+mc('Cinturón Azul · Defensa de mano:','Absorción, bloqueo y esquive del Swing',['Absorción y bloqueo del uppercut','Bloqueo y absorción del Cross','Esquive del giro de revés'],'Las tres defensas del Swing.');
+mc('Cinturón Azul · Punto 9:','Bolsa 1 round (2 min) + soga 6 minutos',['Bolsa 2 rounds + soga 8 minutos','Barridas + soga 5 minutos','Soga 10 minutos'],'Bolsa 1 round + soga 6 min.');
+od('Cinturón Azul · Ordená los 5 rounds del combate',['Light Contact','Kicklight','Point Fighting','Full Contact','Low Kick'],'LC → KL → PF → FC → LK.');
+mc('Puntaje mínimo de aprobación en Azul y Marrón:','70 puntos, mínimo 7 en cada punto',['60 puntos, mínimo 6','80 puntos, mínimo 8','65 puntos'],'Sube la exigencia: 70/100 con 7 por punto.');
+mc('¿En qué cinturón se evalúa la patada descendente?','Verde',['Azul','Violeta','Naranja','Marrón'],'Verde: patada descendente.');
+mc('¿En qué cinturón se evalúa la patada lateral con pierna de adelante?','Violeta',['Naranja','Verde','Amarillo','Azul'],'Violeta.');
+
+/* ---- MARRÓN ---- */
+belt('ma');
+mc('Indumentaria de K-1 Style:','Torso desnudo y short de Kickboxing sin letras tailandesas',['Torso desnudo y pantalón largo','Remera cuello redondo y pantalón largo','Remera sin mangas y short'],'Igual que Low Kick.');
+tf('Las protecciones amateur de K-1 Style son las mismas que las de Low Kick.',true,'Bucal, vendas, cabezal, guantes de boxeo y tibial con empeine.');
+mc('K-1 Style PROFESIONAL · protecciones:','Ídem amateur, pero sin tibiales ni cabezal: solo guantes de box',['Igual que amateur','Con cabezal y sin tibiales','Sin guantes'],'Sin tibiales ni cabezal.');
+mc('Cinturón Marrón · Sombra:','De K-1 Style',['De Low Kick','De Full Contact','De Point Fighting'],'Sombra de K-1 Style.');
+mc('Cinturón Marrón · Golpe de mano:','Giro de revés de puño',['Swing con ambas manos','Body uppercut','Revés con mano adelantada'],'Giro de revés de puño (en el lugar).');
+ms('Cinturón Marrón · Golpes de pierna evaluados',['Patada giro lateral','Giro en gancho','Rodilla frontal'],['Patada descendente','Patada en gancho sin giro','Patada circular'],'Giro lateral, giro en gancho y rodilla frontal.');
+mc('Cinturón Marrón · Defensa de mano:','Absorción, bloqueo y esquive del giro de revés de puño',['Absorción, bloqueo y esquive del Swing','Bloqueo del Hook','Absorción del revés'],'Las tres defensas del giro de revés.');
+mc('Cinturón Marrón · Defensa de pierna:','Defensas de los 2 tipos de giro y bloqueo de la rodilla frontal',['Bloqueo de la patada en gancho','Absorción de la patada lateral','Bloqueo de la descendente'],'Dos giros + rodilla frontal.');
+mc('Cinturón Marrón · Encadenamiento:','K-1 Rules 2 minutos',['Low Kick 2 minutos','Full Contact 2 minutos','Point Fighting 2 minutos'],'K-1 Rules.');
+mc('Cinturón Marrón · Punto 9:','Bolsa 2 rounds (2 min) + soga 8 minutos',['Bolsa 1 round + soga 6 minutos','Barridas + soga 5 minutos','Bolsa 3 rounds + soga 10'],'Bolsa 2 rounds + soga 8 min.');
+od('Cinturón Marrón · Ordená los 6 rounds del combate',['Light Contact','Kicklight','Point Fighting','Full Contact','Low Kick','K-1 Style'],'LC → KL → PF → FC → LK → K-1.');
+mc('Cinturón Marrón · Nota mínima en el EXAMEN TEÓRICO:','8',['6','7','10'],'70 puntos totales, 7 por punto y 8 mínimo en el teórico.',['8','ocho']);
+mc('¿En qué cinturón aparece la rodilla frontal?','Marrón',['Azul','Verde','Violeta'],'Marrón.');
+mc('¿En qué cinturón se evalúa la patada en gancho (sin giro)?','Azul',['Marrón','Verde','Violeta'],'Azul.');
+mc('¿Cuántos minutos de soga se piden en Azul?','6',['5','8','4'],'Verde 5 · Azul 6 · Marrón 8.',['6','seis']);
+mc('¿Cuántos minutos de soga se piden en Marrón?','8',['6','5','10'],'Verde 5 · Azul 6 · Marrón 8.',['8','ocho']);
+mc('¿En qué cinturón se evalúa el Cross con ambas manos?','Naranja',['Amarillo','Violeta','Verde'],'Naranja.');
+mc('¿En qué cinturón se evalúa el Swing?','Azul',['Verde','Marrón','Naranja'],'Azul.');
+
+/* ============ MOVER PREGUNTAS AL CINTURÓN QUE CORRESPONDE ============ */
+[[/patada en gancho \(sin giro\)/,'az'],[/minutos de soga se piden en Azul/,'az'],[/evalúa el Cross/,'na'],[/evalúa el Swing/,'az']].forEach(([r,k])=>Q.forEach(q=>{if(r.test(q.q))q.b=k}));
+
+/* ============ TEÓRICO vs PRÁCTICO ============ */
+const PRX=/^Cinturón \S+ ·|^Guardia de|cada técnica de defensa|^¿En qué cinturón|minutos de soga|^Puntaje mínimo|Ordená los cinturones/;
+Q.forEach(q=>q.p=PRX.test(q.q));
+const PKEYS=['Guardia / Sombra','Golpe de mano','Golpe de pierna','Defensa de mano','Defensa de pierna','Encadenamiento','Combate','Punto 9','Aprobación'];
+const PROG={
+ am:['Guardia de Light Contact: 2 pasos adelante, 2 atrás y 2 a los costados','Uno y Dos (en el lugar, avanzando y retrocediendo)','Patada frontal (en el lugar, avanzando y retrocediendo)','Bloqueo de Uno y Dos en el lugar (2 veces c/u)','Bloqueo de la patada frontal en el lugar (2 veces c/u)','Light Contact 2 min','Light Contact 2 min','Sombra de Light Contact','60 puntos · mínimo 6 por punto'],
+ na:['Sombra: todas las técnicas de Kicklight, 2 min','Cross con ambas manos (en el lugar)','Patada circular (en el lugar, avanzando y retrocediendo)','Bloqueo y absorción del Cross (2 veces c/u)','Absorción de la patada circular en el lugar (2 veces c/u)','Kicklight 2 min','1 round Light Contact + 1 round Kicklight','Cómo se bloquea la patada low kick','60 puntos · mínimo 6 por punto'],
+ vi:['Guardia de Point Fighting (rebotando): 2 pasos adelante, 2 atrás y 2 a los costados','Recto con mano retrasada y revés con mano adelantada (en el lugar, avanzando y retrocediendo)','Patada lateral con pierna de adelante (en el lugar, avanzando y retrocediendo)','Absorción del golpe de mano retrasada y del revés con mano adelantada (2 veces c/u)','Absorción de la patada lateral (2 veces c/u)','Point Fighting 2 min','1 round solo manos + 1 solo piernas + 1 manos y piernas','Finta + combinación recto mano retrasada y reverso mano adelantada','60 puntos · mínimo 6 por punto'],
+ ve:['Sombra de Full Contact','Body uppercut (zona media) y Hook (al mentón)','Patada descendente (en el lugar, avanzando y retrocediendo)','Absorción y bloqueo del Uppercut · Bloqueo del Hook (2 veces c/u)','Bloqueo de la patada descendente (2 veces c/u)','Full Contact 2 min','LC + Kicklight + Point Fighting + Full Contact','Barrida interna y externa + soga 5 min','60 puntos · mínimo 6 por punto'],
+ az:['Sombra de Low Kick','Swing con ambas manos (en el lugar)','Patada en gancho (en el lugar)','Absorción, bloqueo y esquive del Swing (2 veces c/u)','Bloqueo de la patada en gancho (2 veces c/u)','Low Kick 2 min','LC + Kicklight + PF + Full Contact + Low Kick','Bolsa 1 round (2 min) + soga 6 min','70 puntos · mínimo 7 por punto'],
+ ma:['Sombra de K-1 Style','Giro de revés de puño (en el lugar)','Patada giro lateral, giro en gancho (en el lugar) y rodilla frontal','Absorción, bloqueo y esquive del giro de revés de puño (2 veces c/u)','Defensas de los 2 tipos de giro (2 veces c/u) + bloqueo de la rodilla frontal','K-1 Rules 2 min','LC + KL + PF + FC + Low Kick + K-1 Style','Bolsa 2 rounds (2 min) + soga 8 min','70 puntos · mínimo 7 por punto · 8 en el teórico'],
+};
+
+/* ============ MNEMOTECNIA ============ */
+const MN=[
+ ['am','Tatami 4 · Ring 3','Aprendete solo las 3 de RING, que son las de contacto duro donde se permite el K.O. (knock out: el rival queda fuera de combate y no puede seguir): Full Contact, Low Kick y K-1. Todas las demás van a TATAMI: Formas Musicales, Point Fighting, Light Contact y Kicklight (4). Total: 7 modalidades.',/cuántas modalidades|modalidades de (tatami|ring)/i],
+ ['am','Las 4 de tatami','Pensalas por tipo: 2 livianas (Light Contact y Kicklight, las dos llevan “light”), 1 por puntos (Point Fighting) y 1 con música y sin rival (Formas Musicales).',/tatami|kicklight es una|formas musicales/i],
+ ['am','Las 3 de ring','Full Contact · Low Kick · K-1: las iniciales F, L y K, como “FuLL K.O.”. En las tres se permite el K.O. (knock out, dejar al rival fuera de combate): por eso van al ring.',/ring/i],
+ ['am','Full = pleno, Light = ligero','Full = “lleno” (como el tanque full) → contacto pleno. Light = como la gaseosa light → ligero.',/significa (full|light)/i],
+ ['am','Light al 70%','Light pega “7 de 10”: misma técnica que el Full, pero 70% de potencia y en tatami.',/porcentaje|70%|diferencia el light/i],
+ ['am','Full Contact: 14·9·74 en L.A.','“Los Ángeles del 74”: el 14 y el 74 terminan en 4. Setiembre = mes 9.',/origen del full|originó el full|año se originó/i],
+ ['am','Manos de boxeo, piernas de todos','Full Contact = boxeo arriba + “lo mejor de cada casa” abajo: las patadas más efectivas de todas las artes marciales.',/técnicas de (manos|piernas)/i],
+ ['am','-ista','Agregale “-ista” a la modalidad: Fullcontact-ista, Lightcontact-ista. Pero kickboxing → Kickbox-er (en inglés, como el nombre).',/cómo se llama/i],
+ ['ve','Tatami vs ring','Ring = contacto pleno, se permite el K.O. (knock out: el rival queda fuera de combate). Tatami = 70% y el K.O. no está reglamentado: “en la alfombra no se duerme nadie”.',/demás artes|reglamentado el K/i],
+ ['ve','W.A.K.O.','World · Association · Kickboxing · Organizations: Mundo, Asociación, Kickboxing, Organizaciones.',/significa W\.A\.K\.O/i],
+ ['na','RSC vs RSCH','RSC = Referee Stops Contest (el árbitro detiene). La H de RSC-H es de Head, cabeza en inglés: se detiene por golpes en la cabeza y pasa el médico.',/RSC/],
+ ['na','15 en 2','“Quince de ventaja con dos jueces, y a casa”. Solo en tatami.',/diferencia de puntos|15 puntos/i],
+ ['ve','Ring cambia 3 fallos','Ring = tatami, pero cambiás RSC, RSCH y Diferencia de 15 por K.O. (knock out: queda fuera de combate), K.O.T. (knock out técnico: el árbitro corta porque no puede seguir defendiéndose) y Detención. Siguen siendo 7.',/combate de RING|fallos de un combate de RING|aplica en combates de ring/],
+ ['na','Los 7 fallos de tatami','“Pablo Dijo: Ronda Rápida, A Dormir, Adiós” → Puntos · Descalificación · RSC · RSCH · Abandono · Diferencia de 15 · Ausencia.',/fallo/i],
+ ['na','Barrido corporal','Para recordar protecciones, recorré el cuerpo de arriba a abajo: cabeza → boca → manos → pecho → ingle → canilla → pie. Así no te olvidás ninguna.',/protecciones|protector/i],
+ ['na','Kicklight = Low Kick de musculosa','Short estilo Low Kick (sin letras tailandesas: no es Muay Thai) + remera sin mangas tipo sudadera.',/indumentaria de kicklight|letras tailandesas/i],
+ ['vi','Point Fighting parece karate','Chaqueta escote en V + pantalón largo, cinturón opcional. Es la modalidad “más vestida” y la más protegida: hasta coderas y guantes de point fighting.',/point fighting|coderas/i],
+ ['vi','Quién usa qué en PF','Facial → los chicos (niños y cadetes menores). Pecho → solo mujeres. Ingle → todos. Vendas → opcionales.',/protector (facial|de pecho|inguinal)|vendas son/i],
+ ['ve','Círculos que se agrandan','Nacional (IGJ + CAD) → Continental (Panamericana) → Mundial (WAKO). Como zoom out en un mapa.',/^Reconocimiento/i],
+ ['ve','Internacional de chico a grande','Fesukibo (Sudamérica) → Copakibo (Panamérica) → WAKO (mundo) → COI (olímpico).',/internacional/i],
+ ['ve','Full desnudo, Light lleva remera','Full → torso desnudo. Light → Lleva remera (cuello redondo). Los dos con pantalón largo.',/indumentaria de (full|light)/i],
+ ['ve','Pro = sin cabezal','En todas las modalidades de ring, profesional = lo mismo pero sin cabezal (y en Low/K-1 también sin tibiales).',/profesional/i],
+ ['vi','Edades de a 3','Infantiles 7-8-9 · Cadetes menores 10-11-12 · Cadetes mayores 13-14-15 · Juniors 16-17-18. Van de a 3 años. Después: Seniors 19 a 40 y Masters 41 a 55.',/edades|años compite/i],
+ ['ve','Juniors masculino','Saltos de 6 (57·63·69) y después de a 5 hasta 94 (74·79·84·89·94·+94). 9 categorías.',/Juniors \(16 a 18\) MASCULINO/i],
+ ['ve','Pesos por saltos','Infantiles: de a 3, de 18 a 36. Cadetes menores: 28 y después de a 5 desde 32 (37·42·47·+47). Cadetes mayores masc.: de a 5 desde 32 hasta 57, después de a 6 (63·69·+69). Juniors fem.: de a 5, de 50 a 70.',/categor|kg|masters|infantiles|cadetes|juniors/i],
+ ['az','Línea de tiempo','63 → nace el NOMBRE (Japón). 74 → nace el FULL (L.A.). 2019 → el COI acepta a WAKO (30/11 = Día del Kickboxing; según WAKO fue 2018). 2021 → olímpico (20/7, Tokio 2020+1).',/cuándo|año|30 de noviembre|olímpico|palabra/i],
+ ['az','Tokio 20·7·21','“Los Juegos 2020 que se jugaron en el 21”: 20 del 7 del 21.',/olímpico/i],
+ ['az','Low Kick y K-1 son mellizos','Misma ropa (torso desnudo + short sin letras tailandesas) y mismas protecciones.',/Indumentaria de (Low|K-1)|K-1 Style son/i],
+ ['az','Protecciones de Low Kick','“Buenas Vendas Cuidan Golpes Tibiales”: Bucal · Vendas · Cabezal · Guantes de boxeo · Tibial con empeine.',/Protecciones AMATEUR de Low/i],
+ ['az','Japón se lleva 5','Si suena a japonés, es de Japón: Karate, Judo, Aikido y Sumo. Y el Kickboxing también, porque el nombre nació allá. El Jiu jitsu es de Japón y Brasil.',/japón|país de origen del (karate|judo|aikido|sumo|jiu)/i],
+ ['az','El nombre te da el país','Muay THAI → THAIlandia. Savate suena francés → Francia. Capoeira se baila como samba → Brasil. Kali → Filipinas. Taekwondo → Corea. Kung fu → China.',/país de origen/i],
+ ['ma','K-1 se viste como Low Kick','Torso desnudo y short sin letras tailandesas. Protecciones: bucal, vendas, cabezal, guantes de boxeo y tibial con empeine. Profesional: sin tibiales ni cabezal.',/K-1/i],
+];
+const GLOS=[
+ ['Tatami','El piso acolchado (tipo colchoneta) donde se compiten Formas Musicales, Point Fighting, Light Contact y Kicklight.'],
+ ['Ring','El cuadrilátero con cuerdas donde se compiten Full Contact, Low Kick y K-1.'],
+ ['K.O. (knock out)','Cuando un competidor queda fuera de combate por un golpe y no puede continuar. Solo se permite en ring.'],
+ ['K.O.T. (knock out técnico)','El árbitro detiene la pelea porque un competidor ya no puede defenderse, aunque no haya caído.'],
+ ['RSC','Referee Stops Contest: el árbitro detiene el combate (detención técnica), por ejemplo porque un competidor está muy superado.'],
+ ['RSC-H (RSCH)','Referee Stops Contest – Head: el árbitro detiene el combate por golpes en la cabeza; el competidor pasa por control médico. En la planilla figura como “lesión-médico”.'],
+ ['Sombra','Pelear solo contra un rival imaginario, mostrando las técnicas.'],
+ ['Encadenamiento','Combinar técnicas seguidas, sin cortar, durante el tiempo indicado.'],
+ ['Absorción / Bloqueo / Esquive','Absorción: recibir el golpe acompañándolo con el cuerpo para quitarle fuerza. Bloqueo: frenarlo con brazos o piernas. Esquive: moverse para que no llegue.'],
+];
+function trick(q){if(q.p)return null;const bi=BELTS.findIndex(b=>b.k===q.b);
+ let c=MN.filter(m=>m[3].test(q.q));if(!c.length)c=MN.filter(m=>m[3].test(q.q+' '+ansText(q)));const d=m=>m[0]==='gen'?0.5:Math.abs(BELTS.findIndex(x=>x.k===m[0])-bi);c.sort((a,b)=>d(a)-d(b));return c[0]}
+function trickHtml(q){const t=trick(q);return t?`<div class="trick"><b>🧠 ${esc(t[1])}</b><p>${esc(t[2])}</p></div>`:''}
+function mnemo(bi){
+ clearInterval(T.iv);setBelt(bi);
+ app.innerHTML=`
+ <div class="qtop"><button class="x" onclick="home()">←</button><div style="flex:1"><div class="sub" style="font-size:12px">Mnemotecnia</div><h2 style="line-height:1">Trucos para memorizar</h2></div></div>
+ <p class="sub" style="font-size:13px;margin-bottom:12px">Leé el truco, cerrá los ojos y repetilo. Son solo para el teórico; lo práctico lo tenés en 🥋 Técnico. También aparecen al responder una pregunta relacionada.</p>
+ <details open style="margin-top:0"><summary>📖 Palabras que tenés que conocer</summary><div class="plist" style="margin-top:10px">${GLOS.map(g=>`<div class="pitem" style="cursor:default"><div class="pk">${esc(g[0])}</div><div class="pv" style="font-weight:400">${esc(g[1])}</div></div>`).join('')}</div></details>
+ ${BELTS.map((b,i)=>{const L=MN.filter(m=>m[0]===b.k);if(!L.length)return '';return `<details ${i===bi?'open':''} style="margin-top:10px;border-left:6px solid ${b.c}"><summary>Cinturón ${b.n} · ${L.length} trucos</summary><div class="plist" style="margin-top:10px">${L.map(m=>`<div class="trick"><b>🧠 ${esc(m[1])}</b><p>${esc(m[2])}</p></div>`).join('')}</div></details>`}).join('')}`;
+}
+
+/* ============ ESTADO (Leitner + progreso) ============ */
+const KEY='kbquiz_v1';
+let S={target:null,best:{},box:{},sessions:0,answered:0,correct:0};
+try{const r=localStorage.getItem(KEY);if(r)S=Object.assign(S,JSON.parse(r))}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const box=id=>S.box[id]||0;
+function setBox(id,ok){S.box[id]=ok?Math.min(5,Math.max(1,box(id))+1):1}
+function mastery(bi){const qs=Q.filter(q=>q.b===BELTS[bi].k&&!q.p);return Math.round(qs.reduce((s,q)=>s+box(q.id),0)/(qs.length*5)*100)}
+
+/* ============ UTIL ============ */
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const norm=s=>String(s).toLowerCase().trim().replace(/^(el|la|los|las|un|una)\s+/,'').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\bkg\b|%|por ciento/g,'').replace(/[^a-z0-9+]/g,'');
+function weighted(list,n){const pool=list.slice(),out=[];while(out.length<n&&pool.length){const w=pool.map(q=>6-box(q.id)),t=w.reduce((a,b)=>a+b,0);let r=Math.random()*t,i=0;for(;i<pool.length;i++){r-=w[i];if(r<=0)break}out.push(pool.splice(Math.min(i,pool.length-1),1)[0])}return out}
+function ansText(q){if(q.t==='tf')return q.a?'Verdadero':'Falso';if(q.t==='ms')return q.a.join(' · ');if(q.t==='od')return q.a.join(' → ');return q.a}
+function setBelt(bi){const b=BELTS[bi];document.documentElement.style.setProperty('--belt',b.c)}
+
+/* ============ HOME ============ */
+function card(b,i,big){
+ const best=S.best[b.k],m=mastery(i),nq=Q.filter(q=>q.b===b.k&&!q.p).length,pool=Q.filter(q=>!q.p&&BELTS.findIndex(x=>x.k===q.b)<=i).length,ok=best!=null&&best>=b.pass;
+ return `<div class="bcard" style="--c:${b.c};--fg:${b.fg}${big?';border:2px solid '+b.c:''}">
+  <div class="stripe"></div><div class="in">
+  <div class="bhead"><div>${big?'<div class="sub" style="font-size:12px;text-transform:uppercase;letter-spacing:.6px">Tu examen</div>':''}<div class="bname" ${big?'style="font-size:38px"':''}>Cinturón ${b.n} ${ok?'✅':''}</div>
+  <div class="chips"><span class="chip">${b.nq} preguntas</span><span class="chip">⏱ ${b.time}s</span><span class="chip">teórico: ${b.pass/10} de 10</span><span class="chip">${pool} teóricas</span>${b.hint?'<span class="chip">💡 pistas</span>':'<span class="chip">sin pistas</span>'}</div></div>
+  <div class="best">mejor<b>${best!=null?best:'–'}</b></div></div>
+  <div class="sub" style="font-size:12px">Dominio de las ${nq} preguntas propias: ${m}%</div>
+  <div class="prog"><i style="width:${m}%"></i></div>
+  <div class="grid2"><button class="btn belt" onclick="startQuiz(${i})">📝 Teórico</button><button class="btn" onclick="study(${i})">📇 Estudiar</button><button class="btn" onclick="mnemo(${i})">🧠 Mnemotecnia</button><button class="btn" onclick="memo(${i})">🥋 Técnico</button></div>
+ </div></div>`}
+function home(){
+ clearInterval(T.iv);
+ const ti=S.target!=null?S.target:null;setBelt(ti!=null?ti:0);
+ const acc=S.answered?Math.round(S.correct/S.answered*100):0;
+ const passed=BELTS.filter(b=>S.best[b.k]!=null&&S.best[b.k]>=b.pass).length;
+ app.innerHTML=`
+ <div class="top"><div class="logo"><div class="glove">🥊</div><div><h1>Quiz Kickboxing</h1><div class="sub">Exámenes de cinturón · FAK / WAKO</div></div></div></div>
+ <div class="sub" style="margin-bottom:8px">¿Qué cinturón rendís?</div>
+ <div class="beltpick">${BELTS.map((b,i)=>`<button class="bp ${i===ti?'on':''}" style="--c:${b.c};--fg:${b.fg}" onclick="S.target=${i};save();home()">${b.n}</button>`).join('')}</div>
+ <div class="stats">
+  <div class="stat"><b>${passed}/${BELTS.length}</b><span>aprobados</span></div>
+  <div class="stat"><b>${S.sessions}</b><span>exámenes</span></div>
+  <div class="stat"><b>${acc}%</b><span>precisión</span></div>
+ </div>
+ <button class="btn full" style="margin-bottom:14px" onclick="pesos()">⚖️ Categorías de peso</button>
+ ${ti!=null?`${card(BELTS[ti],ti,true)}
+ <p class="sub" style="font-size:13px;margin:10px 2px 0">El teórico de ${BELTS[ti].n} incluye ${ti?'las preguntas de Amarillo a '+BELTS[ti-1].n+' mezcladas con las propias':'solo sus preguntas'}, como en la planilla.</p>
+ <details><summary>Otros cinturones</summary><div class="belts" style="margin-top:12px">${BELTS.map((b,i)=>i===ti?'':card(b,i)).join('')}</div></details>`
+ :`<div class="belts">${BELTS.map((b,i)=>card(b,i)).join('')}</div>`}
+ <details><summary>¿Cómo funciona?</summary><ul>
+  <li><b>Elegí tu cinturón</b> arriba y rendí directo ese examen. Podés cambiarlo cuando quieras.</li>
+  <li><b>Acumulativo:</b> cada examen incluye las preguntas de su cinturón y las de todos los anteriores, como en la planilla real.</li>
+  <li><b>Tiempo:</b> las de marcar varias opciones y las de ordenar no tienen límite de tiempo.</li>
+  <li><b>Sube la dificultad:</b> más preguntas, menos tiempo, más opciones parecidas entre sí y nota de aprobación más alta (60 → 70 → 80).</li>
+  <li><b>Repetición espaciada (Leitner):</b> cada pregunta tiene una caja del 1 al 5. Si fallás vuelve a la 1 y aparece más seguido.</li>
+  <li><b>Feedback inmediato</b> con explicación, y al final podés repasar solo tus errores.</li>
+  <li><b>Pistas</b> (solo Amarillo a Violeta): eliminan una opción pero la respuesta vale medio punto.</li>
+  <li><b>Teórico vs práctico:</b> el quiz usa solo el cuestionario teórico de las planillas. El programa práctico (técnicas, rounds, soga, bolsa) se consulta en <b>Técnico</b>, sin preguntas, que también sirve para tenerlo abierto durante el examen e ir tildando cada punto.</li>
+  <li><b>Mnemotecnia:</b> reglas y frases para memorizar (acrónimos, líneas de tiempo, patrones). Aparecen también al responder.</li>
+  <li><b>Modo Estudiar:</b> tarjetas para leer antes de rendir; marcá si te la sabías.</li>
+ </ul></details>
+ <div class="foot"><button class="btn" onclick="askReset()">↺ Reiniciar progreso</button></div>
+ <p class="sub" style="font-size:12px;margin-top:14px">Contenido: planillas FAK, actualización abril 2025. Las preguntas que remiten a la web de la federación (categorías de tatami y ring) no están incluidas: consultalas en argentinakickboxing.com.</p>`;
+}
+function modal(html){$('#modal').innerHTML=`<div class="modal" onclick="if(event.target===this)closeModal()"><div class="box">${html}</div></div>`}
+function closeModal(){$('#modal').innerHTML=''}
+function askReset(){modal(`<h2>¿Reiniciar todo?</h2><p>Se borran tu cinturón elegido, mejores puntajes y el progreso de repetición espaciada.</p><div class="row"><button class="btn" onclick="closeModal()">Cancelar</button><button class="btn pri" onclick="S={best:{},box:{},sessions:0,answered:0,correct:0};save();closeModal();home()">Reiniciar</button></div>`)}
+
+/* ============ QUIZ ============ */
+let G=null;const T={iv:null};
+function buildItem(q,b){
+ const it={q,mode:q.t};
+ if(q.t==='mc'){
+  if(q.inp&&Math.random()<b.inputP)it.mode='in';
+  else it.opts=shuffle([q.a,...shuffle(q.d).slice(0,b.opts-1)]);
+ }
+ if(q.t==='ms'){const extra=Math.min(q.d.length,1+Math.ceil(b.opts/2));it.opts=shuffle([...q.a,...shuffle(q.d).slice(0,extra)])}
+ if(q.t==='od')it.opts=shuffle(q.a.map((x,i)=>i));
+ return it;
+}
+function startQuiz(bi,review,kind){
+ kind=kind||'t';const isP=kind==='p';const b0=BELTS[bi];setBelt(bi);
+ const b=b0;let items;
+ if(review){items=review.map(q=>buildItem(q,b))}
+ else{
+  const own=Q.filter(q=>q.b===b.k&&q.p===isP),prev=Q.filter(q=>q.p===isP&&BELTS.findIndex(x=>x.k===q.b)<bi);
+  const nq=Math.min(b.nq,own.length+prev.length);
+  const nOwn=bi===0?nq:Math.min(own.length,Math.round(nq*(isP?.6:.55)));
+  let sel=[...weighted(own,nOwn),...weighted(prev,nq-nOwn)];
+  if(sel.length<nq)sel=sel.concat(weighted(own.filter(q=>!sel.includes(q)),nq-sel.length));
+  items=shuffle(sel).map(q=>buildItem(q,b));
+ }
+ G={bi,b,kind,items,i:0,pts:0,streak:0,maxStreak:0,wrong:[],review:!!review};
+ renderQ();
+}
+function renderQ(){
+ const {b,items,i}=G,it=items[i],q=it.q;
+ it.sel=it.mode==='od'?[]:new Set();it.hinted=false;it.done=false;
+ const qb=BELTS.find(x=>x.k===q.b);
+ const typeLbl={mc:'Opción múltiple',ms:'Marcá todas las correctas',tf:'Verdadero o falso',od:'Ordená',in:'Escribí la respuesta'}[it.mode];
+ let body='';
+ if(it.mode==='mc'||it.mode==='ms')body=`<div class="opts">${it.opts.map((o,k)=>`<button class="opt" data-k="${k}" onclick="pick(${k})">${esc(o)}</button>`).join('')}</div>`;
+ if(it.mode==='tf')body=`<div class="row"><button class="opt" data-k="1" onclick="pick(1)" style="text-align:center">✓ Verdadero</button><button class="opt" data-k="0" onclick="pick(0)" style="text-align:center">✗ Falso</button></div>`;
+ if(it.mode==='in')body=`<input class="inp" id="inp" autocomplete="off" placeholder="Tu respuesta…" onkeydown="if(event.key==='Enter')check()">`;
+ if(it.mode==='od')body=`<div class="order-ans" id="oans"></div><div class="order-pool" id="opool"></div>`;
+ const needCheck=it.mode==='ms'||it.mode==='in'||it.mode==='od';
+ app.innerHTML=`
+ <div class="qtop"><button class="x" onclick="quitQ()">✕</button><div class="qbar"><i style="width:${i/items.length*100}%"></i></div><div class="qcount">${i+1}/${items.length}</div></div>
+ <div class="meta"><span>${G.review?'Repaso de errores':(G.kind==='p'?'Técnico · ':'Teórico · ')+'Cinturón '+b.n}</span><span class="streak">${G.streak>=2?'🔥 '+G.streak+' seguidas':''}</span></div>
+ ${G.review||!timed(it)?'':`<div class="timer" id="tm"><i id="tmi"></i></div>`}
+ <div class="qcard" id="qc">
+  <span class="qtag" style="background:${qb.c};color:${qb.fg}">${qb.n}</span><span class="qtype">${typeLbl}${!G.review&&!timed(it)?' · ⏱ sin límite':''}</span>
+  <div class="qtext">${esc(q.q)}</div>${body}
+  <div class="actions" id="acts">
+   ${b.hint&&!G.review?`<button class="btn" id="hintb" onclick="hint()">💡 Pista (½ punto)</button>`:''}
+   ${needCheck?`<button class="btn belt" id="chk" onclick="check()">Comprobar</button>`:''}
+  </div>
+  <div id="fb"></div>
+ </div>`;
+ if(it.mode==='od')drawOrder();
+ if(it.mode==='in')setTimeout(()=>$('#inp')&&$('#inp').focus(),50);
+ if(!G.review&&timed(it))startTimer();
+}
+function timed(it){return it.mode!=='ms'&&it.mode!=='od'}
+function startTimer(){
+ clearInterval(T.iv);const it=G.items[G.i];const dur=G.b.time*1000*(it.mode==='in'?2:1),t0=Date.now();
+ T.iv=setInterval(()=>{const left=dur-(Date.now()-t0),p=Math.max(0,left/dur*100);const el=$('#tmi');if(!el){clearInterval(T.iv);return}
+  el.style.width=p+'%';$('#tm').classList.toggle('warn',p<30);
+  if(left<=0){clearInterval(T.iv);finish(false,true)}},100);
+}
+function drawOrder(){
+ const it=G.items[G.i],q=it.q;
+ $('#oans').innerHTML=it.sel.map((k,n)=>`<button class="och" onclick="unOrd(${n})"><span class="n">${n+1}</span>${esc(q.a[k])}</button>`).join('')||'<span class="sub" style="padding:8px">Tocá los elementos en orden…</span>';
+ $('#opool').innerHTML=it.opts.filter(k=>!it.sel.includes(k)).map(k=>`<button class="och" onclick="ord(${k})">${esc(q.a[k])}</button>`).join('');
+}
+function ord(k){const it=G.items[G.i];if(it.done)return;it.sel.push(k);drawOrder()}
+function unOrd(n){const it=G.items[G.i];if(it.done)return;it.sel.splice(n,1);drawOrder()}
+function pick(k){
+ const it=G.items[G.i];if(it.done)return;
+ if(it.mode==='mc'){finish(it.opts[k]===it.q.a,false,k)}
+ else if(it.mode==='tf'){finish((k===1)===it.q.a,false,k)}
+ else if(it.mode==='ms'){const el=document.querySelector(`.opt[data-k="${k}"]`);if(el.classList.contains('gone'))return;it.sel.has(k)?it.sel.delete(k):it.sel.add(k);el.classList.toggle('sel')}
+}
+function check(){
+ const it=G.items[G.i],q=it.q;if(it.done)return;
+ if(it.mode==='ms'){if(!it.sel.size)return shake();const chosen=[...it.sel].map(k=>it.opts[k]);finish(chosen.length===q.a.length&&chosen.every(x=>q.a.includes(x)))}
+ if(it.mode==='in'){const v=$('#inp').value.trim();if(!v)return shake();const acc=[q.a,...(q.inp||[])].map(norm);it.typed=v;finish(acc.includes(norm(v)))}
+ if(it.mode==='od'){if(it.sel.length<q.a.length)return shake();finish(it.sel.every((k,n)=>k===n))}
+}
+function shake(){const c=$('#qc');c.classList.remove('shake');void c.offsetWidth;c.classList.add('shake')}
+function hint(){
+ const it=G.items[G.i],q=it.q;if(it.done||it.hinted)return;it.hinted=true;$('#hintb').disabled=true;
+ if(it.mode==='mc'){const w=it.opts.map((o,k)=>k).filter(k=>it.opts[k]!==q.a&&!document.querySelector(`.opt[data-k="${k}"]`).classList.contains('gone'));const k=w[Math.random()*w.length|0];const el=document.querySelector(`.opt[data-k="${k}"]`);el.classList.add('gone');el.disabled=true}
+ else if(it.mode==='ms'){const k=it.opts.findIndex(o=>!q.a.includes(o));if(k>=0){const el=document.querySelector(`.opt[data-k="${k}"]`);el.classList.add('gone');el.disabled=true;it.sel.delete(k);el.classList.remove('sel')}toast(`Hay ${q.a.length} correctas.`)}
+ else if(it.mode==='tf'){toast('Pensá en la explicación de la planilla: ¿la frase dice todo exactamente igual?')}
+ else if(it.mode==='in'){toast(`Empieza con “${String(q.a).slice(0,2)}…” y tiene ${String(q.a).length} caracteres.`)}
+ else if(it.mode==='od'){it.sel=[0];drawOrder();toast('Te ubiqué el primero.')}
+}
+function toast(t){$('#fb').innerHTML=`<div class="fb"><p>💡 ${esc(t)}</p></div>`}
+function finish(ok,timeout,k){
+ clearInterval(T.iv);const it=G.items[G.i],q=it.q;it.done=true;it.ok=ok;
+ const val=ok?(it.hinted?.5:1):0;G.pts+=val;
+ if(ok){G.streak++;G.maxStreak=Math.max(G.maxStreak,G.streak)}else{G.streak=0;G.wrong.push(it)}
+ setBox(q.id,ok&&!it.hinted);S.answered++;if(ok)S.correct++;save();
+ // marcar opciones
+ if(it.mode==='mc')document.querySelectorAll('.opt').forEach(el=>{const kk=+el.dataset.k;el.disabled=true;if(it.opts[kk]===q.a)el.classList.add('ok');else if(kk===k)el.classList.add('bad')});
+ if(it.mode==='tf')document.querySelectorAll('.opt').forEach(el=>{const kk=+el.dataset.k;el.disabled=true;if((kk===1)===q.a)el.classList.add('ok');else if(kk===k)el.classList.add('bad')});
+ if(it.mode==='ms')document.querySelectorAll('.opt').forEach(el=>{const kk=+el.dataset.k,o=it.opts[kk],good=q.a.includes(o),s=it.sel.has(kk);el.disabled=true;el.classList.remove('sel');if(good&&s)el.classList.add('ok');else if(!good&&s)el.classList.add('bad');else if(good)el.classList.add('miss')});
+ if(it.mode==='in'){const e=$('#inp');e.disabled=true;e.classList.add(ok?'ok':'bad')}
+ if(it.mode==='od')it.yours=it.sel.map(k=>q.a[k]);
+ const hb=$('#hintb');if(hb)hb.remove();const ck=$('#chk');if(ck)ck.remove();
+ const last=G.i===G.items.length-1;
+ const title=timeout?'⏱ ¡Se acabó el tiempo!':ok?(it.hinted?'✓ Correcto (½ punto por la pista)':['✓ ¡Correcto!','✓ ¡Bien ahí!','✓ ¡Exacto!','✓ ¡Golpe limpio!'][Math.random()*4|0]):'✗ Incorrecto';
+ $('#fb').innerHTML=`<div class="fb ${ok?'ok':'bad'}"><h3>${title}</h3>${ok?'':`<p>Respuesta: <span class="ans">${esc(ansText(q))}</span></p>`}<p>${esc(q.e||'')}</p></div>${trickHtml(q)}`;
+ $('#acts').innerHTML=`<button class="btn belt full" id="nx" onclick="next()">${last?'Ver resultado':'Siguiente →'}</button>`;
+ if(!ok)shake();
+ setTimeout(()=>{const n=$('#nx');n&&n.focus()},50);
+}
+function next(){G.i++;if(G.i>=G.items.length)results();else renderQ()}
+function quitQ(){clearInterval(T.iv);modal(`<h2>¿Abandonar?</h2><p>Se pierde este examen (el progreso de repetición espaciada se mantiene).</p><div class="row"><button class="btn" onclick="closeModal();${G&&!G.review&&timed(G.items[G.i])?'startTimer()':''}">Seguir</button><button class="btn pri" onclick="closeModal();home()">Salir</button></div>`)}
+
+/* ============ RESULTADOS ============ */
+function results(){
+ const {b,bi,items,pts,wrong}=G,score=Math.round(pts/items.length*100),pass=score>=b.pass;
+ let unlockHtml='';
+ if(!G.review){S.sessions++;const bk=G.kind==='p'?b.k+'_p':b.k;if(S.best[bk]==null||score>S.best[bk])S.best[bk]=score;
+  if(pass)unlockHtml=`<div class="unlock" style="--c:${b.c};--fg:${b.fg}">🥋 ${G.kind==='p'?'¡Tenés el programa práctico de '+b.n+' en la cabeza!':'¡Estás listo para el teórico de '+b.n+'!'}</div>`;
+  save();}
+ const C=2*Math.PI*72,col=G.review?'var(--belt)':pass?'var(--ok)':'var(--bad)';
+ app.innerHTML=`
+ <div class="res">
+  <div class="sub">${G.review?'Repaso de errores':(G.kind==='p'?'Técnico':'Examen teórico')+' · Cinturón '+b.n}</div>
+  <div class="ring"><svg width="170" height="170"><circle cx="85" cy="85" r="72" stroke="#2a2a33" stroke-width="12" fill="none"/><circle cx="85" cy="85" r="72" stroke="${col}" stroke-width="12" fill="none" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" id="arc" style="transition:stroke-dashoffset 1s ease"/></svg><div class="v"><div>${score}<small>/ 100</small></div></div></div>
+  ${G.review?`<div class="verdict">${wrong.length?'Seguí repasando':'¡Todo corregido!'}</div>`:`<div class="verdict ${pass?'ok':'bad'}">${pass?'Aprobado':'Desaprobado'}</div><div class="sub">Necesitás ${b.pass} para aprobar · racha máx. ${G.maxStreak}</div>`}
+  ${unlockHtml}
+ </div>
+ <div class="row" style="margin-top:16px">
+  <button class="btn belt" onclick="startQuiz(${bi},null,'${G.kind}')">↻ Rendir de nuevo</button>
+  ${wrong.length?`<button class="btn" onclick="startQuiz(${bi},G.wrong.map(w=>w.q),'${G.kind}')">Repasar ${wrong.length} error${wrong.length>1?'es':''}</button>`:''}
+ </div>
+ <button class="btn full" style="margin-top:10px" onclick="home()">Volver a los cinturones</button>
+ ${wrong.length?`<h2 style="margin-top:22px">Tus errores</h2><div class="mlist">${wrong.map(w=>`<div class="mitem"><div class="q">${esc(w.q.q)}</div>${w.typed?`<div class="y">Escribiste: ${esc(w.typed)}</div>`:''}${w.yours?`<div class="y">Tu orden: ${esc(w.yours.join(' → '))}</div>`:''}<div class="a">✓ ${esc(ansText(w.q))}</div><div class="e">${esc(w.q.e||'')}</div>${trickHtml(w.q)}</div>`).join('')}</div>`:''}`;
+ requestAnimationFrame(()=>setTimeout(()=>{const a=$('#arc');a&&(a.style.strokeDashoffset=C*(1-score/100))},60));
+}
+
+/* ============ MEMO TÉCNICO ============ */
+let M={hide:false,rev:{},done:{}};
+function memo(bi){
+ clearInterval(T.iv);setBelt(bi);const b=BELTS[bi],P=PROG[b.k],np=Q.filter(q=>q.p&&BELTS.findIndex(x=>x.k===q.b)<=bi).length,best=S.best[b.k+'_p'];
+ app.innerHTML=`
+ <div class="qtop"><button class="x" onclick="M.done={};home()">←</button><div style="flex:1"><div class="sub" style="font-size:12px">Técnico</div><h2 style="line-height:1">Programa práctico · ${b.n}</h2></div></div>
+ <div class="row" style="margin:6px 0 12px"><button class="btn ${M.hide?'belt':''}" onclick="M.hide=!M.hide;M.rev={};M.done={};memo(${bi})">${M.hide?'🙈 Modo memoria: ON':'🙈 Modo memoria'}</button><button class="btn" onclick="compare(${bi})">📊 Comparar cinturones</button></div>
+ <p class="sub" style="font-size:13px;margin-bottom:10px">${M.hide?'Decí en voz alta cada punto antes de tocarlo para ver la respuesta.':'En el examen: tocá cada punto para tildarlo cuando lo hagas.'}</p>
+ <div class="plist">${PKEYS.map((k,j)=>{const shown=!M.hide||M.rev[j];return `<div class="pitem" onclick="if(M.hide){M.rev[${j}]=1}else{M.done[${j}]=!M.done[${j}]}memo(${bi})" style="${!M.hide&&M.done[j]?'opacity:.45':''}"><div class="pk"><span class="pn" style="background:${b.c};color:${b.fg}">${!M.hide&&M.done[j]?'✓':(j===8?'★':j+2)}</span>${k}</div><div class="pv ${shown?'':'blur'}">${esc(shown?P[j]:'Tocá para revelar')}</div></div>`}).join('')}</div>
+ <p class="sub" style="font-size:12px;margin:8px 2px 14px">Punto 1 es el teórico y el 10 es la defensa personal del cinturón ${b.n}.</p>
+ ${Object.keys(M.done).some(k=>M.done[k])?`<button class="btn full" onclick="M.done={};memo(${bi})">↺ Destildar todo</button>`:''}`;
+}
+function compare(bi){
+ setBelt(bi);
+ app.innerHTML=`
+ <div class="qtop"><button class="x" onclick="memo(${bi})">←</button><div style="flex:1"><div class="sub" style="font-size:12px">Técnico</div><h2 style="line-height:1">Comparar cinturones</h2></div></div>
+ <p class="sub" style="font-size:13px;margin-bottom:12px">Cómo evoluciona cada punto del práctico. Ideal para no confundir qué técnica va en cada cinturón.</p>
+ ${PKEYS.map((k,j)=>`<details ${j<3?'open':''} style="margin-top:10px"><summary>${k}</summary><div class="cmp">${BELTS.map((b,i)=>`<div class="crow ${i===bi?'me':''}"><span class="cdot" style="background:${b.c}"></span><b>${b.n}</b><span>${esc(PROG[b.k][j])}</span></div>`).join('')}</div></details>`).join('')}`;
+}
+
+/* ============ CATEGORÍAS DE PESO ============ */
+const WAKO_T=[
+ {n:'Infantiles',en:'Children',a:'7, 8 y 9 años',m:['18','21','24','27','30','33','36','+36'],f:['18','21','24','27','30','33','36','+36']},
+ {n:'Cadetes menores',en:'Younger Cadets',a:'10, 11 y 12 años',m:['28','32','37','42','47','+47'],f:['28','32','37','42','47','+47']},
+ {n:'Cadetes mayores',en:'Older Cadets',a:'13, 14 y 15 años',m:['32','37','42','47','52','57','63','69','+69'],f:['32','37','42','46','50','55','60','65','+65']},
+ {n:'Juniors',en:'Juniors',a:'16, 17 y 18 años',m:['57','63','69','74','79','84','89','94','+94'],f:['50','55','60','65','70','+70']},
+ {n:'Seniors (adultos)',en:'Seniors',a:'19 a 40 años',m:['57','63','69','74','79','84','89','94','+94'],f:['50','55','60','65','70','+70']},
+ {n:'Masters (veteranos)',en:'Masters',a:'41 a 55 años',m:['63','74','84','94','+94'],f:['55','65','+65']},
+];
+const WAKO_R=[
+ {n:'Juniors menores',en:'Younger Juniors',a:'15 y 16 años',m:['42','45','48','51','54','57','60','63,5','67','71','75','81','+81'],f:['36','40','44','48','52','56','60','+60']},
+ {n:'Juniors mayores',en:'Older Juniors',a:'17 y 18 años',m:['51','54','57','60','63,5','67','71','75','81','86','91','+91'],f:['48','52','56','60','65','70','+70']},
+ {n:'Seniors (adultos)',en:'Seniors',a:'19 a 40 años',m:['51','54','57','60','63,5','67','71','75','81','86','91','+91'],f:['48','52','56','60','65','70','+70']},
+];
+const chips=(l,col)=>`<div class="kgs">${l.map(k=>`<span class="kg" style="border-color:${col}55">${k}</span>`).join('')}</div>`;
+function grp(g){return `<div class="pitem" style="cursor:default">
+ <div class="pk" style="justify-content:space-between;text-transform:none;letter-spacing:0;font-size:15px;color:var(--tx)"><span>${esc(g.n)}</span><span class="sub" style="font-size:13px;font-weight:500">${esc(g.a)}</span></div>
+ <div class="sub" style="font-size:12px">${esc(g.en)}</div>
+ <div style="margin-top:8px;font-size:12px;font-weight:700;color:#6aa8ff">♂ Masculino · ${g.m.length}</div>${chips(g.m,'#6aa8ff')}
+ <div style="margin-top:8px;font-size:12px;font-weight:700;color:#ff7ab8">♀ Femenino · ${g.f.length}</div>${chips(g.f,'#ff7ab8')}</div>`}
+function pesos(){
+ clearInterval(T.iv);
+ app.innerHTML=`
+ <div class="qtop"><button class="x" onclick="home()">←</button><div style="flex:1"><h2 style="line-height:1">⚖️ Categorías de peso</h2></div></div>
+ <div class="sub" style="margin:-4px 0 12px">Categorías oficiales WAKO</div>
+ <div class="pitem" style="cursor:default;margin-bottom:12px"><div class="pv" style="font-weight:400;margin:0">Cada número es el <b>peso máximo</b>: <b>57</b> = hasta 57 kg. El que lleva <b>+</b> es la categoría más pesada: <b>+94</b> = más de 94 kg.</div></div>
+ 
+ <h2 style="font-size:24px;margin:6px 0 8px">Tatami <span class="sub" style="font-family:Inter;font-size:13px">Point Fighting · Light Contact · Kicklight</span></h2>
+ <div class="plist">${WAKO_T.map(grp).join('')}</div>
+ <h2 style="font-size:24px;margin:18px 0 8px">Ring <span class="sub" style="font-family:Inter;font-size:13px">Full Contact · Low Kick · K-1</span></h2>
+ <p class="sub" style="font-size:13px;margin-bottom:8px">En ring se compite desde los 15 años (no hay infantiles, cadetes ni masters).</p>
+ <div class="plist">${WAKO_R.map(grp).join('')}</div>
+ <p class="sub" style="font-size:12px;margin-top:12px">Fuente: WAKO Europe, “Disciplines and categories” (kickboxingeurope.com). En WAKO la edad se cuenta por año de nacimiento.</p>`;
+}
+
+/* ============ ESTUDIAR (flashcards) ============ */
+let F=null;
+function study(bi){
+ setBelt(bi);const b=BELTS[bi];
+ const own=Q.filter(q=>q.b===b.k&&!q.p);
+ F={bi,cards:weighted(own,own.length),i:0,known:0,shown:false};drawCard();
+}
+function drawCard(){
+ const b=BELTS[F.bi];
+ if(F.i>=F.cards.length){app.innerHTML=`<div class="res"><h2>Repaso terminado</h2><p class="sub" style="margin:8px 0 18px">Te sabías ${F.known} de ${F.cards.length}. Las que no, van a aparecer más seguido en los exámenes.</p></div><div class="row"><button class="btn belt" onclick="startQuiz(${F.bi})">Rendir examen</button><button class="btn" onclick="study(${F.bi})">Repasar otra vez</button></div><button class="btn full" style="margin-top:10px" onclick="home()">Volver</button>`;return}
+ const q=F.cards[F.i];
+ app.innerHTML=`
+ <div class="qtop"><button class="x" onclick="home()">✕</button><div class="qbar"><i style="width:${F.i/F.cards.length*100}%"></i></div><div class="qcount">${F.i+1}/${F.cards.length}</div></div>
+ <div class="meta"><span>Estudiar · Cinturón ${b.n}</span><span>Caja ${box(q.id)||'nueva'}</span></div>
+ <div class="flash" onclick="F.shown=true;drawCard()">
+  <div class="q">${esc(q.q)}</div>
+  ${F.shown?`<div class="a">${esc(ansText(q))}<div class="e">${esc(q.e||'')}</div></div>${trickHtml(q)}`:`<div class="tap">Pensá la respuesta y tocá para darla vuelta</div>`}
+ </div>
+ ${F.shown?`<div class="row" style="margin-top:14px"><button class="btn" style="border-color:var(--bad)" onclick="rate(false)">✗ No la sabía</button><button class="btn" style="border-color:var(--ok)" onclick="rate(true)">✓ La sabía</button></div>`:''}`;
+}
+function rate(ok){const q=F.cards[F.i];setBox(q.id,ok);if(ok)F.known++;save();F.i++;F.shown=false;drawCard()}
+
+home();
+</script>
+</body>
+</html>
